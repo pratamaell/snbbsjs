@@ -1,137 +1,171 @@
 <?php
-
 include 'koneksi.php';
+session_start();
 
-$nisn='';
-$nis='';
-$nama_siswa='';
-$id_kelas='';
-$alamat_siswa='';   
-$no_telp='';
-$id_spp='';
-$sukses = '';
-$error = '';
+$id_barang="";
+$nama_barang="";
+$harga_barang="";
+$jumlah_barang="";
+$foto_barang="";
+$sukses="";
+$error="";
 
 if(isset($_GET['op'])){
     $op = $_GET['op'];
 }else{
-    $op = '';
+    $op='';
 }
 
-if($op =='delete'){
-    $nisn=$_GET['nisn'];
-    $sql1="delete *from siswa where nisn='$nisn'";
-    $q1= mysqli_query($koneksi,$sql1);
+if($op == 'delete'){
+    $id_barang= $_GET['id'];
+    $sql1= "delete from barang where id_barang='$id_barang'";
+    $q1=mysqli_query($koneksi,$sql1);
     if($q1){
-        $sukses="Berhasil hapus data";
+        $sukses="Berhasil Menghapus";
     }else{
-        $error="Gagal hapus data";
+        $error="Gagal Menghapus";
     }
 }
 
-if($op =='edit'){
-    $nisn = $_GET['nisn'];
-    $sql1= "select * from siswa where nisn='$nisn";
+if($op == 'edit'){
+    $id_barang=$_GET['id'];
+    $sql1="select * from barang where id_barang='$id_barang'";
     $q1=mysqli_query($koneksi,$sql1);
     $r1=mysqli_fetch_array($q1);
-    $nisn=$r1['nisn'];
-    $nis=$r1['nis'];
-    $nama_siswa=$r1['nama'];    
-    $id_kelas=$r1['id_kelas'];
-    $alamat_siswa=$r1['alamat'];
-    $no_telp=$r1['no_telp'];
-    $id_spp=$r1['id_spp'];
+    $nama_barang=$r1['nama_barang'];
+    $harga_barang=$r1['harga_barang'];
+    $jumlah_barang=$r1['jumlah_barang'];
 
-    if($nama_siswa==''){
-        $error="Data tidak ditemukan";
+    if($nama_barang == ''){
+        $error="Nama Barang Tidak Ada";
     }
 }
 
-if($op =='simpan'){
-    $nisn= $_POST['nisn'];
-    $nis= $_POST['nis'];
-    $nama_siswa= $_POST['nama'];
-    $id_kelas= $_POST['id_kelas'];
-    $alamat_siswa= $_POST['alamat'];
-    $no_telp= $_POST['no_telp'];
-    $id_spp= $_POST['id_spp'];
+if(isset($_POST['simpan'])){
+    $nama_barang=$_POST['nama_barang'];
+    $harga_barang=$_POST['harga_barang'];
+    $jumlah_barang=$_POST['jumlah_barang'];
+    $foto_barang=$_FILES['foto_barang']['name'];
+    $file_tmp=$_FILES['foto_barang']['tmp_name'];
+    move_uploaded_file($file_tmp,'images/'.$foto_barang);
 
-    if($nisn && $nis && $nama_siswa && $id_kelas && $alamat_siswa && $no_telp && $id_spp){
-       if($op=='edit'){
-        $sql1="UPDATE siswa SET  nis='$nis', nama='$nama_siswa', id_kelas='$id_kelas', alamat='$alamat_siswa', no_telp='$no_telp', id_spp='$id_spp' WHERE nisn='$nisn'";
-        $q1-mysqli_query($koneksi,$sql1);
-        if($q1){
-            $sukses="Berhasil edit data";
+    if($nama_barang && $harga_barang && $jumlah_barang && $foto_barang){
+        if($op=='edit'){
+            $sql1="UPDATE barang SET nama_barang='$nama_barang',harga_barang='$harga_barang',jumlah_barang='$jumlah_barang',foto_barang='$foto_barang' where id_barang='$id_barang'";
+            $q1=mysqli_query($koneksi,$sql1);
+            if($q1){
+                $sukses="Berhasil Mengupdate Barang";
+            }else{
+                $error="gagal update";
+            }
         }else{
-            $error="Gagal edit data";
+            $sql1="INSERT INTO barang (nama_barang,harga_barang,jumlah_barang,foto_barang) values('$nama_barang','$harga_barang','$jumlah_barang','$foto_barang')";
+            $q1=mysqli_query($koneksi,$sql1);
+            if($q1){
+                $sukses="Berhasil masuk barang";
+            }else{
+                $error="gagal masuk";
+            }
         }
-       }else{
-        $sql1="INSERT INTO siswa (nisn, nis, nama, id_kelas, alamat, no_telp, id_spp) VALUES ('$nisn', '$nis', '$nama_siswa', '$id_kelas', '$alamat_siswa', '$no_telp', '$id_spp')";
-        $q1=mysqli_query($koneksi,$sql1);
-        if($q1){
-            $sukses="Berhasil simpan data";
-        }else{
-            $error="Gagal simpan data";
-        }
-       }
-    
-}else{
-        $error="Silahkan isi semua data";
+    }else{
+        $error="gagalllllllll";
     }
 }
+
+
+
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">nk
 </head>
 <body>
-    <div class="card">
-        <div class="card-header">
-            <div class="card-body">
-                <table class="tabel">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">NISN</th>
-                            <th scope="col">NIS</th>
-                            <th scope="col">NAMA</th>
-                            <th scope="col">ALAMAT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
+    <?php 
+    if($sukses){
+        ?>
+        <div class="alert alert-success" role="alert"></div>
+        <?php echo $sukses?>
+    
+    <?php header("refresh:5;url.barang.php")?>
 
-                        include 'koneksi.php';
-                        $sql2 = "select * from siswa order by nisn desc";
-                        $q2= mysqli_query($koneksi,$sql2);
-                        $urut=1;
-                        while($r=mysqli_fetch_array($q2)){
-                            $nisn=$r['nisn'];
-                            $nis=$r['nis'];
-                            $nama_siswa=$r['nama'];
-                            $alamat_siswa=$r['alamat'];
-                            $no_telp=$r['no_telp'];
-                            $id_kelas=$r['id_kelas'];
-                            $id_spp=$r['id_spp'];
-                            ?>
-                            <tr>
-                                <td scope="row"><?php echo $urut++?></td>
-                                <td scope="row"><?php echo $nisn?></td>
-                                <td scope="row">
-                                    <a href="siswa2.php?op=edit&nisn=<?php echo $nisn;?>"><button type="button" class="btn btn-warning">EDIT</button></a>
-                                    <a href="siswa2.php?op=delete&nisn=<?php  $nisn?>"  onclick="return confirm('Yakin ingin hapus?')"><button type="button" class="btn btn-danger">Delete</button></a>
-                                </td>
-                                
-                            </tr>
-                        <?php }?>
-                    </tbody>
-                </table>
-            </div>
+    <?php }?>
+    
+    
+<form method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="exampleInputEmail1" class="form-label">NAMA BARANG</label>
+    <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="nama_barang" value="<?php echo $nama_barang ?>">
+  </div>
+  <div class="mb-3">
+    <label for="exampleInputEmail1" class="form-label">HARGA BARANG</label>
+    <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="harga_barang" value="<?php echo $harga_barang ?>">
+  </div>
+  <div class="mb-3">
+    <label for="exampleInputEmail1" class="form-label">JUMLAH BARANG</label>
+    <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="jumlah_barang" value="<?php echo $jumlah_barang ?>">
+  </div>
+  <div class="mb-3">
+    <label for="exampleInputEmail1" class="form-label">FOTO BARANG</label>
+    <input type="file" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="foto_barang" value="<?php echo $foto_barang ?>">
+  </div>
+  
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">NAMa</th>
+                        <th scope="col">HARGA</th>
+                        <th scope="col">JUMLAH</th>
+                        <th scope="col">FOTO</th>
+                        <th scope="col">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    include 'koneksi.php';
+                    $sql2="select * from barang order by id_barang desc";
+                    $q2= mysqli_query($koneksi,$sql2);
+                    $urut=1;
+                    while($data=mysqli_fetch_array($q2)){
+                         $id_barang=$data['id_barang'];
+                         $nama_barang=$data['nama_barang'];
+                         $harga_barang=$data['harga_barang'];
+                         $jumlah_barang=$data['jumlah_barang'];
+                         $foto_barang=$data['foto_barang'];
+                        ?>
+                        <tr>
+                            <td scope="row"><?php echo $urut++ ?></td>
+                            <td scope="row"><?php echo $nama_barang ?></td>
+                            <td scope="row"><?php echo $harga_barang ?></td>
+                            <td scope="row"><?php echo $jumlah_barang ?></td>
+                            <td scope="row"><img src="images/<?php echo $foto_barang ?>" alt=""></td>
+                            <td scope="row">
+                                <a href="barang.php?op=edit&id=<?php echo $id_barang?>"><button tyoe="button" class="btn btn-warning">Edit</button></a>
+                                <a href="barang.php?op=delete&id=<?= $id_barang?>" onclick="return confirm('Yakin di hapus')"><button tyoe="button" class="btn btn-danger">Delete</button></a>
+                            </td>
+                        </tr>
+
+
+                  <?php  }?>
+                    
+                   
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
+    
 </body>
 </html>
